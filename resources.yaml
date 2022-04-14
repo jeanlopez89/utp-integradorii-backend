@@ -1,0 +1,430 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: Exposes and load balances the application pods
+      openshift.io/generated-by: OpenShiftNewApp
+      service.alpha.openshift.io/dependencies: '[{"name": "taxcalcdb", "kind": "Service"}]'
+    creationTimestamp: "2022-04-14T17:20:03Z"
+    labels:
+      app: ecommerce-backend
+      app.kubernetes.io/component: ecommerce-backend
+      app.kubernetes.io/instance: ecommerce-backend
+      template: ecommerce-backend
+    name: ecommerce-backend
+    namespace: demo
+    resourceVersion: "82947"
+    uid: 806fbeec-87bc-4750-86b9-7a5c4277cd99
+  spec:
+    clusterIP: 172.30.107.48
+    clusterIPs:
+    - 172.30.107.48
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: web
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      name: ecommerce-backend
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: Exposes the taxcalc database
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: "2022-04-14T17:20:04Z"
+    labels:
+      app: ecommerce-backend
+      app.kubernetes.io/component: ecommerce-backend
+      app.kubernetes.io/instance: ecommerce-backend
+      template: ecommerce-backend
+    name: taxcalcdb
+    namespace: demo
+    resourceVersion: "82979"
+    uid: 6824329f-f169-4feb-8228-70853f0c0ef2
+  spec:
+    clusterIP: 172.30.202.207
+    clusterIPs:
+    - 172.30.202.207
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: taxcalcdb
+      port: 27017
+      protocol: TCP
+      targetPort: 27017
+    selector:
+      name: taxcalcdb
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      description: Defines how to deploy the application server
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: "2022-04-14T17:20:04Z"
+    generation: 1
+    labels:
+      app: ecommerce-backend
+      app.kubernetes.io/component: ecommerce-backend
+      app.kubernetes.io/instance: ecommerce-backend
+      template: ecommerce-backend
+    name: ecommerce-backend
+    namespace: demo
+    resourceVersion: "82973"
+    uid: d5efd571-44bf-44a5-978f-26c948b9f8aa
+  spec:
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      name: ecommerce-backend
+    strategy:
+      activeDeadlineSeconds: 21600
+      recreateParams:
+        timeoutSeconds: 600
+      resources: {}
+      type: Recreate
+    template:
+      metadata:
+        annotations:
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          name: ecommerce-backend
+        name: ecommerce-backend
+      spec:
+        containers:
+        - env:
+          - name: DATABASE_SERVICE_NAME
+            value: taxcalcdb
+          - name: MONGODB_USER
+            valueFrom:
+              secretKeyRef:
+                key: database-user
+                name: ecommerce-backend
+          - name: MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: database-password
+                name: ecommerce-backend
+          - name: MONGODB_DATABASE
+            value: tienda
+          - name: MONGODB_ADMIN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: database-admin-password
+                name: ecommerce-backend
+          image: ' '
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /api
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 3
+          name: taxcalc
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /api
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 3
+          resources:
+            limits:
+              memory: 512Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+    test: false
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - taxcalc
+        from:
+          kind: ImageStreamTag
+          name: ecommerce-backend:latest
+          namespace: demo
+      type: ImageChange
+    - type: ConfigChange
+  status:
+    availableReplicas: 0
+    conditions:
+    - lastTransitionTime: "2022-04-14T17:20:04Z"
+      lastUpdateTime: "2022-04-14T17:20:04Z"
+      message: Deployment config does not have minimum availability.
+      status: "False"
+      type: Available
+    latestVersion: 0
+    observedGeneration: 1
+    replicas: 0
+    unavailableReplicas: 0
+    updatedReplicas: 0
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      description: Defines how to deploy the database
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: "2022-04-14T17:20:04Z"
+    generation: 1
+    labels:
+      app: ecommerce-backend
+      app.kubernetes.io/component: ecommerce-backend
+      app.kubernetes.io/instance: ecommerce-backend
+      template: ecommerce-backend
+    name: taxcalcdb
+    namespace: demo
+    resourceVersion: "82983"
+    uid: 46d82f76-7980-4416-aab0-c0844820a4f1
+  spec:
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      name: taxcalcdb
+    strategy:
+      activeDeadlineSeconds: 21600
+      recreateParams:
+        timeoutSeconds: 600
+      resources: {}
+      type: Recreate
+    template:
+      metadata:
+        annotations:
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          name: taxcalcdb
+        name: taxcalcdb
+      spec:
+        containers:
+        - env:
+          - name: MONGODB_USER
+            valueFrom:
+              secretKeyRef:
+                key: database-user
+                name: ecommerce-backend
+          - name: MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: database-password
+                name: ecommerce-backend
+          - name: MONGODB_DATABASE
+            value: tienda
+          - name: MONGODB_ADMIN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: database-admin-password
+                name: ecommerce-backend
+          image: ' '
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 27017
+            timeoutSeconds: 1
+          name: taxcalcdb
+          ports:
+          - containerPort: 27017
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -i
+              - -c
+              - mongo 127.0.0.1:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD
+                --eval="quit()"
+            failureThreshold: 3
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              memory: 512Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /var/lib/mongodb/data
+            name: taxcalcdb-data
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir: {}
+          name: taxcalcdb-data
+    test: false
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - taxcalcdb
+        from:
+          kind: ImageStreamTag
+          name: mongodb:3.2
+          namespace: openshift
+      type: ImageChange
+    - type: ConfigChange
+  status:
+    availableReplicas: 0
+    conditions:
+    - lastTransitionTime: "2022-04-14T17:20:04Z"
+      lastUpdateTime: "2022-04-14T17:20:04Z"
+      message: Deployment config does not have minimum availability.
+      status: "False"
+      type: Available
+    latestVersion: 0
+    observedGeneration: 1
+    replicas: 0
+    unavailableReplicas: 0
+    updatedReplicas: 0
+- apiVersion: build.openshift.io/v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+      description: Defines how to build the application
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: "2022-04-14T17:20:04Z"
+    generation: 1
+    labels:
+      app: ecommerce-backend
+      app.kubernetes.io/component: ecommerce-backend
+      app.kubernetes.io/instance: ecommerce-backend
+      template: ecommerce-backend
+    name: ecommerce-backend
+    namespace: demo
+    resourceVersion: "82964"
+    uid: 5bb92bdd-114b-46f4-afe5-202a41678032
+  spec:
+    failedBuildsHistoryLimit: 5
+    nodeSelector: null
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ecommerce-backend:latest
+    postCommit:
+      script: npm test
+    resources: {}
+    runPolicy: Serial
+    source:
+      git:
+        uri: https://github.com/jeanlopez89/utp-integradorii-backend.git
+      type: Git
+    strategy:
+      sourceStrategy:
+        env:
+        - name: NPM_MIRROR
+        from:
+          kind: ImageStreamTag
+          name: nodejs:4
+          namespace: openshift
+      type: Source
+    successfulBuildsHistoryLimit: 5
+    triggers:
+    - imageChange: {}
+      type: ImageChange
+    - type: ConfigChange
+    - github:
+        secret: lqiultIrg8NkdPm1EU3KJO8GqTFQFKpXCd2k0VdF
+      type: GitHub
+    - generic:
+        secret: gHcoAMk6QUluWqNip6nEo28L6pGkK4nLre8u7gDv
+      type: Generic
+  status:
+    lastVersion: 0
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    annotations:
+      description: Keeps track of changes in the application image
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: "2022-04-14T17:20:03Z"
+    generation: 1
+    labels:
+      app: ecommerce-backend
+      app.kubernetes.io/component: ecommerce-backend
+      app.kubernetes.io/instance: ecommerce-backend
+      template: ecommerce-backend
+    name: ecommerce-backend
+    namespace: demo
+    resourceVersion: "82956"
+    uid: 06ae3915-1eb0-4690-ae82-a1c6c636d048
+  spec:
+    lookupPolicy:
+      local: false
+  status:
+    dockerImageRepository: image-registry.openshift-image-registry.svc:5000/demo/ecommerce-backend
+    publicDockerImageRepository: default-route-openshift-image-registry.apps.openshiftaws.9pxp.p1.openshiftapps.com/demo/ecommerce-backend
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+      openshift.io/host.generated: "true"
+    creationTimestamp: "2022-04-14T17:20:03Z"
+    labels:
+      app: ecommerce-backend
+      app.kubernetes.io/component: ecommerce-backend
+      app.kubernetes.io/instance: ecommerce-backend
+      template: ecommerce-backend
+    name: ecommerce-backend
+    namespace: demo
+    resourceVersion: "82951"
+    uid: 4ce81281-0adc-4845-abb9-524f8e573784
+  spec:
+    host: ecommerce-backend-demo.apps.openshiftaws.9pxp.p1.openshiftapps.com
+    to:
+      kind: Service
+      name: ecommerce-backend
+      weight: 100
+    wildcardPolicy: None
+  status:
+    ingress:
+    - conditions:
+      - lastTransitionTime: "2022-04-14T17:20:03Z"
+        status: "True"
+        type: Admitted
+      host: ecommerce-backend-demo.apps.openshiftaws.9pxp.p1.openshiftapps.com
+      routerCanonicalHostname: router-default.apps.openshiftaws.9pxp.p1.openshiftapps.com
+      routerName: default
+      wildcardPolicy: None
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
