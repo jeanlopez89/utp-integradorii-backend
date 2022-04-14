@@ -136,10 +136,7 @@
               "secret": "${GENERIC_WEBHOOK_SECRET}"
             }
           }
-        ],
-        "postCommit": {
-          "script": "npm test"
-        }
+        ]
       }
     },
     {
@@ -264,13 +261,13 @@
       "metadata": {
         "name": "${DATABASE_SERVICE_NAME}",
         "annotations": {
-          "description": "Exposes the taxcalc database"
+          "description": "Exposes the ecommerce-backend database"
         }
       },
       "spec": {
         "ports": [
           {
-            "name": "taxcalcdb",
+            "name": "ecommerce-backend-db",
             "port": 27017,
             "targetPort": 27017
           }
@@ -299,7 +296,7 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "taxcalcdb"
+                "ecommerce-backend-db"
               ],
               "from": {
                 "kind": "ImageStreamTag",
@@ -326,7 +323,7 @@
           "spec": {
             "containers": [
               {
-                "name": "taxcalcdb",
+                "name": "ecommerce-backend-db",
                 "image": " ",
                 "ports": [
                   {
@@ -374,7 +371,7 @@
                       "/bin/sh",
                       "-i",
                       "-c",
-                      "mongo 127.0.0.1:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval=\"quit()\""
+                      "mongo localhost:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval=\"quit()\""
                     ]
                   }
                 },
@@ -481,7 +478,7 @@
       "name": "DATABASE_SERVICE_NAME",
       "displayName": "Database Service Name",
       "required": true,
-      "value": "taxcalcdb"
+      "value": "ecommerce-backend-db"
     },
     {
       "name": "DATABASE_USER",
